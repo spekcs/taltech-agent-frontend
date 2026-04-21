@@ -261,7 +261,7 @@ const difficultyOptions = [
         <span class="font-bold">{{ selectedTopic?.name }}</span>
         <Button icon="pi pi-times" text rounded severity="secondary" @click="reset" />
       </div>
-      <ProgressBar :value="progress" style="height: 6px" class="mb-6" />
+      <ProgressBar :value="progress" style="height: 12px" class="mb-6" />
 
       <div id="quiz-question-editor" class="mb-6 prose max-w-none"></div>
 
