@@ -20,7 +20,7 @@ export const courseApi = {
 };
 
 export const topicApi = {
-  getAllTopics: () => api.get(`/concepts`),
+  getAllTopics: (course) => api.get(`/concepts`, { params: { course } }),
   getTopicDetails: (topicId) => api.get(`/topics/${topicId}`),
   getTopicMaterials: (topicId) => api.get(`/topics/${topicId}/materials`),
 };

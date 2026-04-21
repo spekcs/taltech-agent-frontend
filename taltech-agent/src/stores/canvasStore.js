@@ -40,17 +40,34 @@ export const useCanvasStore = defineStore('canvas', () => {
     error.value = null
     try {
       const response = await courseApi.getCourses()
-      // If response.data is an array, use it directly. Otherwise try response.data.courses.
-      courses.value = Array.isArray(response.data) ? response.data : (response.data.courses || [])
-
+      let coursesData = Array.isArray(response.data) ? response.data : (response.data.courses || [])
+      
+      // Enrich courses with topic counts
+      const enrichedCourses = await Promise.all(coursesData.map(async (course) => {
+        const courseName = typeof course === 'string' ? course : course.name;
+        try {
+          const topicsRes = await topicApi.getAllTopics(courseName);
+          const topicCount = topicsRes.data.concepts ? topicsRes.data.concepts.length : 0;
+          
+          if (typeof course === 'string') {
+            return { name: course, topicCount };
+          } else {
+            return { ...course, topicCount };
+          }
+        } catch (err) {
+          console.error(`Failed to fetch topics for course ${courseName}:`, err);
+          return typeof course === 'string' ? { name: course, topicCount: 0 } : { ...course, topicCount: 0 };
+        }
+      }));
+      
+      courses.value = enrichedCourses;
     } catch (err) {
       console.error('Failed to fetch courses:', err)
       error.value = err.message
-      // Fallback for demo if API fails
       courses.value = [
-        { id: 1, name: 'Computer Science 101', count: 12 },
-        { id: 2, name: 'Data Structures & Algorithms', count: 8 },
-        { id: 3, name: 'Web Development Fundamentals', count: 15 },
+        { id: 1, name: 'Computer Science 101', topicCount: 12 },
+        { id: 2, name: 'Data Structures & Algorithms', topicCount: 8 },
+        { id: 3, name: 'Web Development Fundamentals', topicCount: 15 },
       ]
     } finally {
       isLoading.value = false
