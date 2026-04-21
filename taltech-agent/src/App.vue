@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import SelectButton from 'primevue/selectbutton'
+import Toast from 'primevue/toast'
 
 const route = useRoute()
 const router = useRouter()
@@ -22,6 +23,7 @@ const currentPath = computed({
 
 <template>
   <main class="flex flex-col min-h-screen">
+    <Toast />
     <div class="nav-container flex justify-end mb-8">
       <SelectButton
         v-model="currentPath"
@@ -49,31 +51,4 @@ main {
   z-index: 100;
 }
 
-:deep(.p-selectbutton) {
-  background: white;
-  border-radius: 12px;
-  padding: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e8e3d8;
-}
-
-:deep(.p-selectbutton .p-button) {
-  border: none;
-  background: transparent;
-  color: #6b6860;
-  border-radius: 8px;
-  font-weight: 500;
-  padding: 0.5rem 1rem;
-  transition: all 0.2s;
-}
-
-:deep(.p-selectbutton .p-button.p-highlight) {
-  background: #6366f1;
-  color: white;
-}
-
-:deep(.p-selectbutton .p-button:not(.p-highlight):hover) {
-  background: #fcfaf7;
-  color: #1a1a1a;
-}
 </style>

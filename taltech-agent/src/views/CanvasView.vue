@@ -1,22 +1,30 @@
 <script setup>
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { useCanvasStore } from '@/stores/canvasStore'
 import TopicCanvas from '@/components/canvas/TopicCanvas.vue'
-import Select from 'primevue/select'
+const router = useRouter()
+const canvasStore = useCanvasStore()
 
-const topic = undefined
+const selectedTopic = ref(null)
+
+const topics = computed(() =>
+  canvasStore.nodes.map(node => ({
+    id: node.id,
+    name: node.title
+  }))
+)
+
 </script>
 
 <template>
-  <div class="canvas-view">
-    <Select
-      v-model="topic"
-      :options="[]"
-      optionLabel="name"
-      placeholder="Select a City"
-      class="w-full mt-8"
-    />
-
+  <div class="canvas-view p-6 max-w-7xl mx-auto">
     <TopicCanvas />
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.canvas-view {
+  min-height: 100vh;
+}
+</style>

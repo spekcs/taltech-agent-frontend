@@ -99,7 +99,7 @@ class MaterialsTool {
 
         // Remove button
         const removeBtn = document.createElement('div')
-        removeBtn.innerHTML = '×'
+        removeBtn.innerHTML = '<i class="pi pi-times"></i>'
         removeBtn.classList.add(
           'absolute',
           '-right-2',
@@ -107,8 +107,8 @@ class MaterialsTool {
           'bg-red-500',
           'text-white',
           'rounded-full',
-          'w-4',
-          'h-4',
+          'w-5',
+          'h-5',
           'flex',
           'items-center',
           'justify-center',
@@ -163,7 +163,7 @@ class MaterialsTool {
 
   createAssetElement(asset, index) {
     const source = document.createElement('div')
-    source.classList.add('source', 'bg-olive-50', 'rounded-xl', 'pr-4', 'pl-4', 'pt-2', 'pb-2')
+    source.classList.add('source', 'bg-olive-50', 'rounded-l', 'pr-4', 'pl-4', 'pt-2', 'pb-2')
 
     const title = document.createElement('div')
     title.classList.add('source__title', 'text-[0.75rem]', 'outline-none', 'font-medium')
@@ -281,9 +281,10 @@ onUnmounted(() => {
   min-width: 1000px;
   border-radius: 12px;
   background: url('/pattern.svg');
+  min-height: 100vh;
 }
 
 .topic__heading {
-  margin-left: 7em;
+  margin-left: 6em;
 }
 </style>

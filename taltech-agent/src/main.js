@@ -3,6 +3,7 @@ import { createPinia } from 'pinia'
 import { createRouter, createWebHistory } from 'vue-router'
 import PrimeVue from 'primevue/config'
 import Aura from '@primeuix/themes/aura'
+import ToastService from 'primevue/toastservice'
 import 'primeicons/primeicons.css'
 import App from './App.vue'
 import './style.css'
@@ -26,4 +27,5 @@ createApp(App)
       options: { darkModeSelector: false },
     },
   })
+  .use(ToastService)
   .mount('#app')

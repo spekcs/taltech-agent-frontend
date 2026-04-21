@@ -20,7 +20,12 @@ export const topicApi = {
 };
 
 export const quizApi = {
-  generateQuiz: (topicId) => api.post('/quiz/generate', { topic_id: topicId }),
+  generateQuiz: (topicId, options = {}) => 
+    api.post('/quiz/generate', { 
+      topic_id: topicId, 
+      type: options.type || 'test', 
+      difficulty: options.difficulty || 'hard' 
+    }),
   submitAnswers: (quizId, answers) => api.post(`/quiz/${quizId}/submit`, { answers }),
   getLatestResults: () => api.get('/quiz/results/latest'),
 };

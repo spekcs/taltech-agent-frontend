@@ -4,19 +4,16 @@
     <!-- Header -->
     <div class="chat-header">
       <div class="chat-header-left">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-          fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-        </svg>
+        <i class="pi pi-comments" style="font-size: 0.9rem"></i>
         <span>Chat</span>
         <span class="model-badge">{{ model }}</span>
       </div>
       <div class="chat-header-right">
         <button class="icon-btn" title="Settings" @click="showSettings = !showSettings">
-          ⚙
+          <i class="pi pi-cog"></i>
         </button>
         <button class="icon-btn danger" title="Clear" @click="clearMessages">
-          🗑
+          <i class="pi pi-trash"></i>
         </button>
       </div>
     </div>
@@ -72,7 +69,7 @@
 
     <!-- Context badge -->
     <div v-if="useContext && contextBlocks.length" class="context-badge">
-      <span>📄 {{ contextBlocks.length }} context block{{ contextBlocks.length !== 1 ? 's' : '' }}</span>
+      <span><i class="pi pi-file" style="font-size: 0.75rem; margin-right: 4px"></i> {{ contextBlocks.length }} context block{{ contextBlocks.length !== 1 ? 's' : '' }}</span>
       <button class="context-peek" @click="showContext = !showContext">
         {{ showContext ? 'hide' : 'peek' }}
       </button>
@@ -98,7 +95,7 @@
         :disabled="!inputText.trim() || isLoading"
         @click="send"
       >
-        ➤
+        <i class="pi pi-send"></i>
       </button>
     </div>
 
@@ -202,7 +199,7 @@ async function send() {
 
     messages.push({ role: 'assistant', content: reply, time: now() });
   } catch (err) {
-    messages.push({ role: 'assistant', content: `⚠️ ${err.message}`, time: now() });
+    messages.push({ role: 'assistant', content: `<i class="pi pi-exclamation-triangle" style="color: #ef4444"></i> ${err.message}`, time: now() });
   } finally {
     isLoading.value = false;
     save();

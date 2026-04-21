@@ -1,48 +1,35 @@
 import { createApp, reactive } from 'vue';
 import PrimeVue from 'primevue/config';
 import Aura from '@primeuix/themes/aura';
-import ChatToolComponent from './ChatTool.vue';
-import QuizTool from './quiz.js';
+import QuizToolComponent from './QuizTool.vue';
 
-class ChatTool {
+export default class QuizTool {
   static get toolbox() {
     return {
-      title: 'Chat',
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-        fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      title: 'Quiz',
+      icon: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
       </svg>`,
     };
-  }
-
-  static get isReadOnlySupported() {
-    return true;
   }
 
   constructor({ data, config, api, readOnly }) {
     this.api = api;
     this.readOnly = readOnly;
     this.config = config || {};
-
-    this.data = {
-      messages: data?.messages || [],
-      systemPrompt: data?.systemPrompt || config?.systemPrompt || 'You are a helpful assistant.',
-      model: data?.model || config?.model || 'gpt-4o',
-    };
-
+    this.data = data || {};
     this._container = null;
     this._app = null;
   }
 
   render() {
     this._container = document.createElement('div');
-    this._container.classList.add('chat-tool-wrapper');
+    this._container.classList.add('quiz-tool-wrapper');
 
-    this._app = createApp(ChatToolComponent, {
+    this._app = createApp(QuizToolComponent, {
       initialData: reactive({ ...this.data }),
+      config: this.config,
       readOnly: this.readOnly,
-      endpoint: this.config.endpoint,
-      getContext: this.config.getContext || null,
       onSave: (updated) => Object.assign(this.data, updated),
     });
 
@@ -65,6 +52,3 @@ class ChatTool {
     this._app?.unmount();
   }
 }
-
-export { ChatTool, QuizTool };
-export default ChatTool;
