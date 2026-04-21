@@ -1,47 +1,31 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { useCanvasStore } from '@/stores/canvasStore'
 import RuledBg from '@/components/canvas/RuledBg.vue'
 import EditorJS from '@editorjs/editorjs'
 import ChatTool from '@/tools/index.js'
 
 const editorRef = ref(null)
 const editorInstance = ref(null)
+const route = useRoute()
+const canvasStore = useCanvasStore()
+const ready = ref(false)
 
 const emit = defineEmits(['change'])
 
-const topic = {
-  id: 1,
-  title: 'Introduction to Algorithms',
-  content: 'Big-O notation, sorting, searching fundamentals.',
-  color: '#6366f1',
-  width: 260,
-  materials: [
-    {
-      summary: 'Andmebaasid on stx ägedad',
-      assets: [
-        {
-          link: 'delfi.ee',
-          pages: '1-2',
-          title: 'Big important boook',
-        },
-        {
-          link: 'delfi.ee',
-          pages: '1-2',
-          title: 'Big important boook',
-        },
-        {
-          link: 'delfi.ee',
-          pages: '1-2',
-          title: 'Big important boook',
-        },
-      ],
-    },
-  ],
-}
+const topic = computed(() => {
+  const selected = canvasStore.nodes.find((node) => node.id == route.params.id) || canvasStore.nodes[0]
+  if (selected) return selected
 
-/**
- * Custom Editor.js Tool for Materials
- */
+  return {
+    id: 'placeholder',
+    title: 'Teema puudub',
+    content: 'Vali teema, et näha selle sisu.',
+    materials: [],
+  }
+})
+
 class MaterialsTool {
   static get toolbox() {
     return {
@@ -66,28 +50,35 @@ class MaterialsTool {
     const container = document.createElement('div')
     container.classList.add('material', 'flex', 'flex-row', 'w-full', 'gap-2')
 
-    // Summary Section
     const summaryEl = document.createElement('div')
-    summaryEl.classList.add(
-      'materials__summary',
-      'p-2',
-      'bg-amber-50',
-      'flex-2',
-      'outline-none',
-      'rounded-lg',
-    )
+    summaryEl.classList.add('materials__summary', 'p-2', 'bg-amber-50', 'flex-2', 'outline-none', 'rounded-lg')
     summaryEl.contentEditable = true
-    summaryEl.innerHTML = this.data.summary
+    summaryEl.textContent = this.data.summary
     summaryEl.addEventListener('input', () => {
-      this.data.summary = summaryEl.innerHTML
+      this.data.summary = summaryEl.textContent || ''
     })
 
-    // Sources Section
     const sourcesEl = document.createElement('div')
     sourcesEl.classList.add('materials__sources', 'flex', 'flex-1', 'flex-col', 'gap-y-2')
 
+    const addAssetBtn = document.createElement('button')
+    addAssetBtn.innerText = '+ Add Source'
+    addAssetBtn.classList.add(
+      'text-[0.7rem]',
+      'mt-1',
+      'text-gray-400',
+      'hover:text-gray-600',
+      'cursor-pointer',
+      'text-left',
+      'border',
+      'border-dashed',
+      'border-gray-300',
+      'rounded-lg',
+      'p-1',
+      'hover:bg-gray-50',
+    )
+
     const renderAssets = () => {
-      // Clear but keep the add button if it exists
       const existingAssets = sourcesEl.querySelectorAll('.source-wrapper')
       existingAssets.forEach((el) => el.remove())
 
@@ -96,8 +87,6 @@ class MaterialsTool {
         assetWrapper.classList.add('source-wrapper', 'relative', 'group')
 
         const sourceItem = this.createAssetElement(asset, index)
-
-        // Remove button
         const removeBtn = document.createElement('div')
         removeBtn.innerHTML = '<i class="pi pi-times"></i>'
         removeBtn.classList.add(
@@ -129,23 +118,6 @@ class MaterialsTool {
       })
     }
 
-    // Add Source Button
-    const addAssetBtn = document.createElement('button')
-    addAssetBtn.innerText = '+ Add Source'
-    addAssetBtn.classList.add(
-      'text-[0.7rem]',
-      'mt-1',
-      'text-gray-400',
-      'hover:text-gray-600',
-      'cursor-pointer',
-      'text-left',
-      'border',
-      'border-dashed',
-      'border-gray-300',
-      'rounded-lg',
-      'p-1',
-      'hover:bg-gray-50',
-    )
     addAssetBtn.addEventListener('click', () => {
       this.data.assets.push({ title: 'Source Title', link: 'https://' })
       renderAssets()
@@ -192,45 +164,54 @@ class MaterialsTool {
   }
 }
 
-onMounted(() => {
-  // Construct initial blocks from both content and materials
+const buildBlocks = () => {
   const blocks = []
 
-  if (topic.content) {
-    if (typeof topic.content === 'string') {
-      blocks.push({ type: 'paragraph', data: { text: topic.content } })
-    } else if (topic.content.blocks) {
-      blocks.push(...topic.content.blocks)
+  if (topic.value.content) {
+    if (typeof topic.value.content === 'string') {
+      blocks.push({ type: 'paragraph', data: { text: topic.value.content } })
+    } else if (topic.value.content.blocks) {
+      blocks.push(...topic.value.content.blocks)
     }
   }
 
-  if (topic.materials && topic.materials.length > 0) {
-    topic.materials.forEach((material) => {
+  if (topic.value.materials?.length) {
+    topic.value.materials.forEach((material) => {
       blocks.push({
         type: 'materials',
-        data: material,
+        data: {
+          summary: material.summary || material.title || 'Materjal',
+          assets: material.assets || (material.title ? [{ title: material.title, link: material.link || '' }] : []),
+        },
       })
     })
   }
 
+  return blocks
+}
+
+const initEditor = () => {
+  if (!editorRef.value || !ready.value) return
+  if (editorInstance.value && typeof editorInstance.value.destroy === 'function') {
+    editorInstance.value.destroy()
+  }
+
   editorInstance.value = new EditorJS({
     holder: editorRef.value,
-    data: { blocks },
+    data: { blocks: buildBlocks() },
     tools: {
       materials: MaterialsTool,
       chat: {
         class: ChatTool,
         config: {
           endpoint: '/api/chat',
-          model: 'gpt-4o',
+          model: 'qwen2.5:3b',
           systemPrompt: 'You are a helpful assistant.',
-
-          // Optional — use editor.save() instead of DOM scraping for context
           getContext: async () => {
             const data = await editorInstance.value.save()
             return data.blocks
-              .filter((b) => b.type !== 'chat')
-              .map((b) => b.data?.text || b.data?.content || b.data?.summary || '')
+              .filter((block) => block.type !== 'chat')
+              .map((block) => block.data?.text || block.data?.content || block.data?.summary || '')
               .filter(Boolean)
           },
         },
@@ -242,6 +223,34 @@ onMounted(() => {
     },
     minHeight: 0,
   })
+}
+
+const ensureTopicReady = async () => {
+  ready.value = false
+  await canvasStore.loadData()
+
+  const topicId = route.params.id || canvasStore.nodes[0]?.id
+  if (topicId) {
+    await canvasStore.hydrateTopic(topicId)
+  }
+
+  ready.value = true
+  await nextTick()
+  initEditor()
+}
+
+onMounted(async () => {
+  await ensureTopicReady()
+})
+
+watch(() => route.params.id, async () => {
+  await ensureTopicReady()
+})
+
+watch(() => canvasStore.nodes.length, async () => {
+  if (!ready.value && canvasStore.nodes.length > 0) {
+    await ensureTopicReady()
+  }
 })
 
 onUnmounted(() => {
@@ -261,12 +270,16 @@ onUnmounted(() => {
         <h1>{{ topic.title }}</h1>
       </div>
 
-      <div class="topic__description">
+      <div v-if="!ready || canvasStore.topicLoading" class="topic__loading">
+        Laen materjale...
+      </div>
+
+      <div v-else class="topic__description">
         <div ref="editorRef"></div>
       </div>
     </div>
   </div>
-</template>
+ </template>
 
 <style scoped>
 .topic__wrapper {
@@ -286,5 +299,11 @@ onUnmounted(() => {
 
 .topic__heading {
   margin-left: 6em;
+}
+
+.topic__loading {
+  margin-left: 6em;
+  color: #6b7280;
+  font-size: 0.95rem;
 }
 </style>

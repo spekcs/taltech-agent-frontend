@@ -23,9 +23,9 @@
       <div v-if="showSettings && !readOnly" class="settings-panel">
         <label class="settings-label">Model</label>
         <select v-model="model" class="settings-input">
-          <option value="gpt-4o">GPT-4o</option>
-          <option value="gpt-4-turbo">GPT-4 Turbo</option>
-          <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+          <option value="qwen2.5:3b">qwen2.5:3b</option>
+          <option value="llama3.2:3b">llama3.2:3b</option>
+          <option value="mistral:7b">mistral:7b</option>
         </select>
 
         <label class="settings-label">System Prompt</label>
@@ -199,7 +199,7 @@ async function send() {
 
     messages.push({ role: 'assistant', content: reply, time: now() });
   } catch (err) {
-    messages.push({ role: 'assistant', content: `<i class="pi pi-exclamation-triangle" style="color: #ef4444"></i> ${err.message}`, time: now() });
+    messages.push({ role: 'assistant', content: `Warning: ${err.message}`, time: now() });
   } finally {
     isLoading.value = false;
     save();
@@ -243,12 +243,22 @@ function now() {
 }
 
 function renderMarkdown(text) {
-  return text
+  const safeText = escapeHtml(text ?? '');
+  return safeText
     .replace(/```[\w]*\n?([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
     .replace(/`([^`]+)`/g, '<code>$1</code>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
     .replace(/\n/g, '<br/>');
+}
+
+function escapeHtml(text) {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 // ── Watchers ───────────────────────────────────────────────────────────────

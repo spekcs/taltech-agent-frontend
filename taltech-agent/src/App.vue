@@ -8,7 +8,7 @@ const route = useRoute()
 const router = useRouter()
 
 const viewOptions = [
-  { label: 'Canvas', value: '/canvas' },
+  { label: 'Topics', value: '/canvas' },
   { label: 'Courses', value: '/courses' },
   { label: 'Quiz', value: '/quiz' }
 ]

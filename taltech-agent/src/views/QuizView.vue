@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCanvasStore } from '@/stores/canvasStore'
 import EditorJS from '@editorjs/editorjs'
@@ -12,15 +12,20 @@ const editorRef = ref(null)
 let editorInstance = null
 
 const topics = computed(() =>
-  canvasStore.nodes.map((node) => ({
-    id: node.id,
-    name: node.title,
-  })),
+  canvasStore.nodes
+    .filter((node) => (node.materialCount || node.materials?.length || 0) > 0)
+    .map((node) => ({
+      id: String(node.id),
+      name: node.title,
+      courseId: node.courseId,
+      materialCount: node.materialCount || node.materials?.length || 0,
+    })),
 )
 
-onMounted(() => {
-  const topicId = route.params.id
-  const initialTopic = topicId ? topics.value.find((t) => t.id == topicId) : null
+onMounted(async () => {
+  await canvasStore.loadData()
+  const topicId = route.params.id ? String(route.params.id) : null
+  const initialTopic = topicId ? topics.value.find((topic) => topic.id === topicId) : topics.value[0] || null
 
   editorInstance = new EditorJS({
     holder: editorRef.value,
@@ -38,7 +43,8 @@ onMounted(() => {
       quiz: {
         class: QuizTool,
         config: {
-          topics: topics.value,
+          getTopics: () => topics.value,
+          getRouteTopicId: () => (route.params.id ? String(route.params.id) : null),
         },
       },
       chat: {
@@ -61,16 +67,13 @@ onUnmounted(() => {
 
 <template>
   <div class="quiz-view-wrapper min-h-screen p-6">
-    <div
-      class="quiz-content relative mx-auto max-w-[1000px] p-12 rounded-xl bg-white overflow-hidden"
-    >
+    <div class="quiz-content relative mx-auto max-w-[1000px] p-12 rounded-xl bg-white overflow-hidden">
       <RuledBg />
 
       <div class="relative z-10">
         <div class="mb-8 ml-6">
           <h1 class="text-2xl font-black text-gray-900 flex items-center gap-3">
             <i class="pi pi-bolt" style="font-size: 2rem"></i>
-
             Interactive Quiz
           </h1>
         </div>
@@ -82,9 +85,6 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.quiz-view-wrapper {
-}
-
 .quiz-content {
   background: url('/pattern.svg');
   box-shadow:

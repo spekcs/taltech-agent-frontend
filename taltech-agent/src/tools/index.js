@@ -27,7 +27,7 @@ class ChatTool {
     this.data = {
       messages: data?.messages || [],
       systemPrompt: data?.systemPrompt || config?.systemPrompt || 'You are a helpful assistant.',
-      model: data?.model || config?.model || 'gpt-4o',
+      model: data?.model || config?.model || 'qwen2.5:3b',
     };
 
     this._container = null;
