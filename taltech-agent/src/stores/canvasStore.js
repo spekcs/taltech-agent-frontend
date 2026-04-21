@@ -14,7 +14,14 @@ export const useCanvasStore = defineStore('canvas', () => {
     error.value = null
     try {
       const response = await topicApi.getAllTopics()
-      topics.value = response.data.concepts || []
+      const array = []
+      response.data.concepts.forEach((topic) => {
+        array.push({
+          id: topic,
+          name: topic,
+        })
+      topics.value = array
+    })
     } catch (err) {
       console.error('Failed to fetch topics:', err)
       error.value = err.message

@@ -1,41 +1,27 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useCanvasStore } from '@/stores/canvasStore'
 import EditorJS from '@editorjs/editorjs'
 import { QuizTool, ChatTool } from '@/tools'
 import RuledBg from '@/components/canvas/RuledBg.vue'
 
 const route = useRoute()
-const router = useRouter()
 const canvasStore = useCanvasStore()
 const editorRef = ref(null)
 let editorInstance = null
 
-const topics = computed(() =>
-  canvasStore.topics.map((t) => ({
-    name: t.title,
-  })),
-)
+const topics = computed(() => {
+  return canvasStore.topics
+})
 
-const initEditor = async () => {
+const initEditor = () => {
   if (editorInstance && typeof editorInstance.destroy === 'function') {
     editorInstance.destroy()
   }
 
-  // Ensure courses and topics are loaded for initialTopic identification
-  if (canvasStore.courses.length === 0) {
-    await canvasStore.fetchCourses()
-  }
-
-  const courseName = route.params.course || canvasStore.currentCourse
-  if (canvasStore.topics.length === 0 || canvasStore.currentCourse !== courseName) {
-    canvasStore.currentCourse = courseName
-    await canvasStore.fetchTopics(courseName)
-  }
-
-  const topicName = route.params.topic || null
-  const initialTopic = topicName ? topics.value.find((t) => t.name === topicName) : null
+  const topicId = route.params.id
+  const initialTopic = topicId ? topics.value.find((t) => t.id == topicId) : null
 
   editorInstance = new EditorJS({
     holder: editorRef.value,
@@ -54,9 +40,7 @@ const initEditor = async () => {
         class: QuizTool,
         config: {
           topics: topics.value,
-          course: courseName,
-          router: router
-        }
+        },
       },
       chat: {
         class: ChatTool,
@@ -69,13 +53,20 @@ const initEditor = async () => {
   })
 }
 
-onMounted(() => {
+onMounted(async () => {
+  if (canvasStore.topics.length === 0) {
+    await canvasStore.fetchTopics()
+  }
   initEditor()
 })
 
-watch([() => route.params.topic, () => route.params.course, () => canvasStore.topics], () => {
-  initEditor()
-}, { deep: true })
+// watch(
+//   [() => route.params.id, () => canvasStore.topics],
+//   () => {
+//     initEditor()
+//   },
+//   { deep: true },
+// )
 
 onUnmounted(() => {
   if (editorInstance && typeof editorInstance.destroy === 'function') {
@@ -106,6 +97,8 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.quiz-view-wrapper {
+}
 
 .quiz-content {
   background: url('/pattern.svg');
