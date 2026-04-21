@@ -12,9 +12,21 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/', redirect: '/canvas' },
-    { path: '/canvas', component: () => import('./views/CanvasView.vue') },
-    { path: '/courses', component: () => import('./views/CourseSelector.vue') },
-    { path: '/quiz', component: () => import('./views/QuizView.vue') },
+    { 
+      name: 'canvas',
+      path: '/canvas/:id?', 
+      component: () => import('./views/CanvasView.vue') 
+    },
+    { 
+      name: 'courses',
+      path: '/courses', 
+      component: () => import('./views/CourseSelector.vue') 
+    },
+    { 
+      name: 'quiz',
+      path: '/quiz/:id?', 
+      component: () => import('./views/QuizView.vue') 
+    },
   ],
 })
 

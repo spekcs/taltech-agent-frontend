@@ -19,7 +19,7 @@ const topics = computed(() =>
 )
 
 onMounted(() => {
-  const topicId = route.query.topicId
+  const topicId = route.params.id
   const initialTopic = topicId ? topics.value.find((t) => t.id == topicId) : null
 
   editorInstance = new EditorJS({

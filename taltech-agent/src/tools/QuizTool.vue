@@ -1,5 +1,6 @@
 <script setup>
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import ProgressBar from 'primevue/progressbar'
 import Card from 'primevue/card'
 import Button from 'primevue/button'
@@ -16,12 +17,21 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['save'])
+const router = useRouter()
+const route = useRoute()
 
 // --- State ---
 const step = ref(props.initialData.step || 'selection')
 const quizType = ref(props.initialData.quizType || 'test')
 const difficulty = ref(props.initialData.difficulty || 'hard')
 const selectedTopic = ref(props.initialData.selectedTopic || null)
+
+// Watch topic change and update route
+watch(selectedTopic, (newTopic) => {
+  if (newTopic && newTopic.id != route.params.id) {
+    router.push({ name: route.name, params: { id: newTopic.id } })
+  }
+})
 
 const topics = ref(props.config.topics || [
   { id: 1, name: 'Data Structures' },
