@@ -40,10 +40,11 @@ export const useCanvasStore = defineStore('canvas', () => {
     error.value = null
     try {
       const response = await courseApi.getCourses()
-      courses.value = response.data.courses || []
+      // If response.data is an array, use it directly. Otherwise try response.data.courses.
+      courses.value = Array.isArray(response.data) ? response.data : (response.data.courses || [])
 
     } catch (err) {
-      console.error('Failed to fetch topics:', err)
+      console.error('Failed to fetch courses:', err)
       error.value = err.message
       // Fallback for demo if API fails
       courses.value = [

@@ -12,6 +12,11 @@ const api = axios.create({
 export const courseApi = {
   getCourses: () => api.get('/courses'),
   getCourseTopics: (courseId) => api.get(`/courses/${courseId}/topics`),
+  ingest: (formData) => api.post('/ingest', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  }),
 };
 
 export const topicApi = {
