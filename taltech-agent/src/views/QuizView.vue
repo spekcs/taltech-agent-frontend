@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCanvasStore } from '@/stores/canvasStore'
 import EditorJS from '@editorjs/editorjs'
@@ -18,7 +18,11 @@ const topics = computed(() =>
   })),
 )
 
-onMounted(() => {
+const initEditor = () => {
+  if (editorInstance && typeof editorInstance.destroy === 'function') {
+    editorInstance.destroy()
+  }
+
   const topicId = route.params.id
   const initialTopic = topicId ? topics.value.find((t) => t.id == topicId) : null
 
@@ -50,7 +54,18 @@ onMounted(() => {
     },
     minHeight: 0,
   })
+}
+
+onMounted(async () => {
+  if (canvasStore.topics.length === 0) {
+    await canvasStore.fetchTopics()
+  }
+  initEditor()
 })
+
+watch([() => route.params.id, () => canvasStore.topics], () => {
+  initEditor()
+}, { deep: true })
 
 onUnmounted(() => {
   if (editorInstance && typeof editorInstance.destroy === 'function') {
@@ -70,7 +85,6 @@ onUnmounted(() => {
         <div class="mb-8 ml-6">
           <h1 class="text-2xl font-black text-gray-900 flex items-center gap-3">
             <i class="pi pi-bolt" style="font-size: 2rem"></i>
-
             Interactive Quiz
           </h1>
         </div>

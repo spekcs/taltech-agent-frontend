@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.BACKEND_URL;
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -15,16 +15,17 @@ export const courseApi = {
 };
 
 export const topicApi = {
+  getAllTopics: () => api.get(`/concepts`),
   getTopicDetails: (topicId) => api.get(`/topics/${topicId}`),
   getTopicMaterials: (topicId) => api.get(`/topics/${topicId}/materials`),
 };
 
 export const quizApi = {
-  generateQuiz: (topicId, options = {}) => 
-    api.post('/quiz/generate', { 
-      topic_id: topicId, 
-      type: options.type || 'test', 
-      difficulty: options.difficulty || 'hard' 
+  generateQuiz: (topicId, options = {}) =>
+    api.post('/quiz/generate', {
+      topic_id: topicId,
+      type: options.type || 'test',
+      difficulty: options.difficulty || 'hard'
     }),
   submitAnswers: (quizId, answers) => api.post(`/quiz/${quizId}/submit`, { answers }),
   getLatestResults: () => api.get('/quiz/results/latest'),

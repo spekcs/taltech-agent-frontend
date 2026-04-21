@@ -1,43 +1,37 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import RuledBg from '@/components/canvas/RuledBg.vue'
 import EditorJS from '@editorjs/editorjs'
 import ChatTool from '@/tools/index.js'
+import { useCanvasStore } from '@/stores/canvasStore'
 
+const props = defineProps({
+  topicId: { type: [Number, String], default: null }
+})
+
+const canvasStore = useCanvasStore()
 const editorRef = ref(null)
 const editorInstance = ref(null)
+const topicData = ref(null)
 
 const emit = defineEmits(['change'])
 
-const topic = {
-  id: 1,
-  title: 'Introduction to Algorithms',
-  content: 'Big-O notation, sorting, searching fundamentals.',
-  color: '#6366f1',
-  width: 260,
-  materials: [
-    {
-      summary: 'Andmebaasid on stx ägedad',
-      assets: [
-        {
-          link: 'delfi.ee',
-          pages: '1-2',
-          title: 'Big important boook',
-        },
-        {
-          link: 'delfi.ee',
-          pages: '1-2',
-          title: 'Big important boook',
-        },
-        {
-          link: 'delfi.ee',
-          pages: '1-2',
-          title: 'Big important boook',
-        },
-      ],
-    },
-  ],
+const loadTopicData = () => {
+  if (!props.topicId) {
+    topicData.value = null
+    return
+  }
+  
+  // Find topic in store
+  const found = canvasStore.topics.find(t => t.id == props.topicId)
+  if (found) {
+    topicData.value = found
+    initEditor()
+  }
 }
+
+watch(() => props.topicId, loadTopicData)
+watch(() => canvasStore.topics, loadTopicData, { deep: true })
 
 /**
  * Custom Editor.js Tool for Materials
@@ -192,20 +186,27 @@ class MaterialsTool {
   }
 }
 
-onMounted(() => {
+const initEditor = () => {
+  if (editorInstance.value) {
+    editorInstance.value.destroy()
+    editorInstance.value = null
+  }
+
+  if (!topicData.value) return
+
   // Construct initial blocks from both content and materials
   const blocks = []
 
-  if (topic.content) {
-    if (typeof topic.content === 'string') {
-      blocks.push({ type: 'paragraph', data: { text: topic.content } })
-    } else if (topic.content.blocks) {
-      blocks.push(...topic.content.blocks)
+  if (topicData.value.content) {
+    if (typeof topicData.value.content === 'string') {
+      blocks.push({ type: 'paragraph', data: { text: topicData.value.content } })
+    } else if (topicData.value.content.blocks) {
+      blocks.push(...topicData.value.content.blocks)
     }
   }
 
-  if (topic.materials && topic.materials.length > 0) {
-    topic.materials.forEach((material) => {
+  if (topicData.value.materials && topicData.value.materials.length > 0) {
+    topicData.value.materials.forEach((material) => {
       blocks.push({
         type: 'materials',
         data: material,
@@ -242,6 +243,10 @@ onMounted(() => {
     },
     minHeight: 0,
   })
+}
+
+onMounted(() => {
+  loadTopicData()
 })
 
 onUnmounted(() => {
@@ -253,16 +258,22 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="topic__wrapper relative">
+  <div class="topic__wrapper relative min-h-[400px]">
     <RuledBg />
 
-    <div class="topic">
+    <div v-if="topicData" class="topic">
       <div class="topic__heading font-bold text-2xl mb-2">
-        <h1>{{ topic.title }}</h1>
+        <h1>{{ topicData.title }}</h1>
       </div>
 
       <div class="topic__description">
         <div ref="editorRef"></div>
+      </div>
+    </div>
+    <div v-else class="flex items-center justify-center h-full text-gray-400 mt-20">
+      <div class="text-center">
+        <i class="pi pi-map text-5xl mb-4"></i>
+        <p>Select a topic to view its content</p>
       </div>
     </div>
   </div>

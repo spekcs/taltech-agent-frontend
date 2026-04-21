@@ -33,12 +33,18 @@ watch(selectedTopic, (newTopic) => {
   }
 })
 
-const topics = ref(props.config.topics || [
-  { id: 1, name: 'Data Structures' },
-  { id: 2, name: 'Algorithms' },
-  { id: 3, name: 'Graph Theory' },
-  { id: 4, name: 'Dynamic Programming' }
-])
+const topics = ref(props.config.topics || [])
+
+// Watch for topics updates from parent
+watch(() => props.config.topics, (newTopics) => {
+  if (newTopics) {
+    topics.value = newTopics
+    // Also re-sync selectedTopic if needed
+    if (route.params.id && !selectedTopic.value) {
+      selectedTopic.value = topics.value.find(t => t.id == route.params.id)
+    }
+  }
+}, { immediate: true })
 
 const questions = ref(props.initialData.questions || [])
 const currentIndex = ref(props.initialData.currentIndex || 0)
