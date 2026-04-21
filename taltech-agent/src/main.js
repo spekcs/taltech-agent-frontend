@@ -12,24 +12,25 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/', redirect: '/canvas' },
-    {
+    { 
       name: 'canvas',
-      path: '/canvas/:id?',
-      component: () => import('./views/CanvasView.vue')
+      path: '/canvas/:course?/:topic?', 
+      component: () => import('./views/CanvasView.vue') 
     },
+
     {
       name: 'courses',
       path: '/courses',
       component: () => import('./views/CourseSelector.vue')
     },
-    {
+    { 
       name: 'quiz',
-      path: '/quiz/:id?',
-      component: () => import('./views/QuizView.vue')
+      path: '/quiz/:course?/:topic?', 
+      component: () => import('./views/QuizView.vue') 
     },
+
   ],
 })
-
 createApp(App)
   .use(createPinia())
   .use(router)

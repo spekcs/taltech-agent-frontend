@@ -1,0 +1,1165 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Easels API",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/ingest": {
+      "post": {
+        "summary": "Upload and ingest a PDF",
+        "description": "Upload a PDF file to extract text, embed chunks, and extract concepts. The original PDF is stored and downloadable via `GET /documents/{id}/file`.",
+        "operationId": "ingest_pdf_ingest_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_ingest_pdf_ingest_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documents": {
+      "get": {
+        "summary": "List all ingested documents",
+        "description": "Returns all uploaded documents with their IDs. Use the `id` to download the original PDF via `GET /documents/{id}/file`.",
+        "operationId": "list_documents_documents_get",
+        "parameters": [
+          {
+            "name": "course",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Course"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documents/{document_id}/file": {
+      "get": {
+        "summary": "Download the original PDF for a document",
+        "description": "Streams back the original uploaded PDF file.",
+        "operationId": "get_document_file_documents__document_id__file_get",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Document Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/concepts": {
+      "get": {
+        "summary": "List all concepts",
+        "operationId": "get_concepts_concepts_get",
+        "parameters": [
+          {
+            "name": "course",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Course"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/courses": {
+      "get": {
+        "summary": "List all courses",
+        "operationId": "get_courses_courses_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rag": {
+      "post": {
+        "summary": "Ask a question",
+        "description": "Retrieve relevant chunks from uploaded material and generate a grounded answer. Pass `history` (array of `{role, content}`) for multi-turn chat context. Returns `{answer: str, sources: list}`.",
+        "operationId": "ask_rag_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RAGRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RAGResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quiz/generate": {
+      "post": {
+        "summary": "Generate quiz questions for one or more concepts",
+        "operationId": "quiz_generate_quiz_generate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuizGenerateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quiz/evaluate": {
+      "post": {
+        "summary": "Evaluate a student answer",
+        "description": "Grade a single student answer against the source text. Pass the `source_text` returned by `/quiz/generate`. Returns `{correct: bool, score: int, feedback: str}`.",
+        "operationId": "quiz_evaluate_quiz_evaluate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuizEvaluateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quiz/result": {
+      "post": {
+        "summary": "Save quiz result (optionally updates SM-2 in same call)",
+        "operationId": "quiz_result_quiz_result_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuizResultRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quiz/weak": {
+      "get": {
+        "summary": "Get weakest concepts by quiz history",
+        "operationId": "quiz_weak_quiz_weak_get",
+        "parameters": [
+          {
+            "name": "course",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Course"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 5,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/progress": {
+      "get": {
+        "summary": "Stats dashboard",
+        "description": "Returns overall study progress: concepts attempted vs total, mastery rate (≥80%), average score, daily streak, and per-concept SM-2 review schedule. Filter by `course` or omit for all courses.",
+        "operationId": "progress_progress_get",
+        "parameters": [
+          {
+            "name": "course",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Course"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/summary": {
+      "post": {
+        "summary": "Generate an Estonian summary",
+        "description": "Retrieves the most relevant material for a topic and summarises it in Estonian. Use `topic` for a search query or `chunk_ids` to pin specific chunks. Returns `{summary: str, sources: list}`. Feed the summary text to `/tts` for audio.",
+        "operationId": "summary_summary_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SummaryAudioRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tts": {
+      "post": {
+        "summary": "Text to Estonian speech (WAV)",
+        "description": "Converts text to speech using TartuNLP (Estonian). Returns raw `audio/wav` bytes — play directly or save as `.wav`. Speakers: `mari` (female, default) or `kalev` (male).",
+        "operationId": "tts_tts_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TTSRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rag/stream": {
+      "post": {
+        "summary": "Stream RAG answer token by token",
+        "operationId": "rag_stream_endpoint_rag_stream_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RAGRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plan": {
+      "post": {
+        "summary": "Generate a personalised study plan",
+        "description": "Reads weak concepts from quiz history and builds a day-by-day schedule. Each day includes real reading references (document + page) and practice questions generated from your uploaded material. Requires at least one saved quiz result (`/quiz/result`) to have weak concepts.",
+        "operationId": "plan_plan_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/homework-helper": {
+      "post": {
+        "summary": "Guided hints without direct answers",
+        "description": "Use this instead of `/rag` when the student is working on a homework problem and should find the answer themselves. The AI will point to relevant material, ask guiding questions, and give hints — **but will never reveal the direct answer**. Response: `{guidance: str, sources: list}`.",
+        "operationId": "homework_helper_homework_helper_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HomeworkRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quiz/next": {
+      "get": {
+        "summary": "Get next concept for spaced repetition",
+        "description": "Returns the concept most overdue for review according to SM-2. Falls back to unreviewed concepts if nothing is overdue. Use this to drive a 'Daily Review' feature. Returns `{concept, course, next_review, interval_days, repetitions, easiness}`.",
+        "operationId": "quiz_next_quiz_next_get",
+        "parameters": [
+          {
+            "name": "course",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Course"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quiz/sm2": {
+      "post": {
+        "summary": "Update SM-2 spaced repetition state",
+        "description": "Call this after a quiz to schedule the next review. **Note:** you can skip this by passing `quality` directly to `/quiz/result`. Quality scale: 0-2 = failed (repeat soon), 3 = passed with difficulty, 4 = good, 5 = perfect.",
+        "operationId": "quiz_sm2_quiz_sm2_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SM2UpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Body_ingest_pdf_ingest_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "course": {
+            "type": "string",
+            "title": "Course"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "title",
+          "course"
+        ],
+        "title": "Body_ingest_pdf_ingest_post"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HomeworkRequest": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "course": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Course"
+          },
+          "top_k": {
+            "type": "integer",
+            "title": "Top K",
+            "default": 5
+          }
+        },
+        "type": "object",
+        "required": [
+          "question"
+        ],
+        "title": "HomeworkRequest",
+        "example": {
+          "course": "Elektrisüsteem",
+          "question": "Miks kasutatakse alalisvooluliine pikkade kaabelliinide korral?"
+        }
+      },
+      "PlanRequest": {
+        "properties": {
+          "course": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Course"
+          },
+          "days_until_exam": {
+            "type": "integer",
+            "title": "Days Until Exam"
+          },
+          "target_grade": {
+            "type": "string",
+            "title": "Target Grade",
+            "default": "5"
+          },
+          "limit_weak": {
+            "type": "integer",
+            "title": "Limit Weak",
+            "default": 10
+          }
+        },
+        "type": "object",
+        "required": [
+          "days_until_exam"
+        ],
+        "title": "PlanRequest",
+        "example": {
+          "course": "Elektrisüsteem",
+          "days_until_exam": 5,
+          "limit_weak": 10,
+          "target_grade": "4"
+        }
+      },
+      "QuizEvaluateRequest": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "student_answer": {
+            "type": "string",
+            "title": "Student Answer"
+          },
+          "source_text": {
+            "type": "string",
+            "title": "Source Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question",
+          "student_answer",
+          "source_text"
+        ],
+        "title": "QuizEvaluateRequest",
+        "example": {
+          "question": "Millised nimipinged vastavad IEC standarditele Eesti kõrgepingevõrkudes?",
+          "source_text": "Eesti kõrgepingevõrkudes vastavad IEC-standarditele nimipinged 10, 20, 35, 110 ja 220 kV...",
+          "student_answer": "10, 20, 35, 110 ja 220 kV"
+        }
+      },
+      "QuizGenerateRequest": {
+        "properties": {
+          "concept": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Concept"
+          },
+          "concepts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Concepts",
+            "default": []
+          },
+          "course": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Course"
+          },
+          "n_questions": {
+            "type": "integer",
+            "title": "N Questions",
+            "default": 5
+          }
+        },
+        "type": "object",
+        "title": "QuizGenerateRequest",
+        "examples": [
+          {
+            "summary": "Single concept",
+            "value": {
+              "concept": "nimipinged",
+              "course": "Elektrisüsteem",
+              "n_questions": 3
+            }
+          },
+          {
+            "summary": "Multiple concepts",
+            "value": {
+              "concepts": [
+                "nimipinged",
+                "alalisvool"
+              ],
+              "course": "Elektrisüsteem",
+              "n_questions": 6
+            }
+          }
+        ]
+      },
+      "QuizResultRequest": {
+        "properties": {
+          "concept": {
+            "type": "string",
+            "title": "Concept"
+          },
+          "course": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Course"
+          },
+          "score": {
+            "type": "integer",
+            "title": "Score"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "quality": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quality"
+          }
+        },
+        "type": "object",
+        "required": [
+          "concept",
+          "score",
+          "total"
+        ],
+        "title": "QuizResultRequest",
+        "example": {
+          "concept": "nimipinged",
+          "course": "Elektrisüsteem",
+          "quality": 4,
+          "score": 2,
+          "total": 3
+        }
+      },
+      "RAGRequest": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "course": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Course"
+          },
+          "top_k": {
+            "type": "integer",
+            "title": "Top K",
+            "default": 5
+          },
+          "history": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "History",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "question"
+        ],
+        "title": "RAGRequest",
+        "example": {
+          "course": "Elektrisüsteem",
+          "history": [
+            {
+              "content": "Mis on alalisvool?",
+              "role": "user"
+            },
+            {
+              "content": "Alalisvool on vool, mis voolab alati samas suunas...",
+              "role": "assistant"
+            }
+          ],
+          "question": "Mis on nimipinge ja milleks seda kasutatakse?",
+          "top_k": 5
+        }
+      },
+      "RAGResponse": {
+        "properties": {
+          "answer": {
+            "type": "string",
+            "title": "Answer"
+          },
+          "sources": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Sources"
+          }
+        },
+        "type": "object",
+        "required": [
+          "answer",
+          "sources"
+        ],
+        "title": "RAGResponse"
+      },
+      "SM2UpdateRequest": {
+        "properties": {
+          "concept": {
+            "type": "string",
+            "title": "Concept"
+          },
+          "course": {
+            "type": "string",
+            "title": "Course"
+          },
+          "quality": {
+            "type": "integer",
+            "title": "Quality"
+          }
+        },
+        "type": "object",
+        "required": [
+          "concept",
+          "course",
+          "quality"
+        ],
+        "title": "SM2UpdateRequest",
+        "example": {
+          "concept": "nimipinged",
+          "course": "Elektrisüsteem",
+          "quality": 4
+        }
+      },
+      "SummaryAudioRequest": {
+        "properties": {
+          "topic": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Topic"
+          },
+          "course": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Course"
+          },
+          "top_k": {
+            "type": "integer",
+            "title": "Top K",
+            "default": 5
+          },
+          "chunk_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Chunk Ids",
+            "default": []
+          },
+          "speaker": {
+            "type": "string",
+            "title": "Speaker",
+            "default": "mari"
+          }
+        },
+        "type": "object",
+        "title": "SummaryAudioRequest"
+      },
+      "TTSRequest": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "speaker": {
+            "type": "string",
+            "title": "Speaker",
+            "default": "mari"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "TTSRequest"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

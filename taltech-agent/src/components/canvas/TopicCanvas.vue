@@ -4,34 +4,58 @@ import RuledBg from '@/components/canvas/RuledBg.vue'
 import EditorJS from '@editorjs/editorjs'
 import ChatTool from '@/tools/index.js'
 import { useCanvasStore } from '@/stores/canvasStore'
+import { topicApi } from '@/api'
 
 const props = defineProps({
-  topicId: { type: [Number, String], default: null }
+  topicTitle: { type: String, default: null }
 })
 
 const canvasStore = useCanvasStore()
 const editorRef = ref(null)
 const editorInstance = ref(null)
 const topicData = ref(null)
+const isLoading = ref(false)
 
 const emit = defineEmits(['change'])
 
-const loadTopicData = () => {
-  if (!props.topicId) {
+const loadTopicData = async () => {
+  if (!props.topicTitle) {
     topicData.value = null
+    if (editorInstance.value) {
+      editorInstance.value.destroy()
+      editorInstance.value = null
+    }
     return
   }
-  
-  // Find topic in store
-  const found = canvasStore.topics.find(t => t.id == props.topicId)
-  if (found) {
-    topicData.value = found
+
+  isLoading.value = true
+  try {
+    // 1. Get summary from API
+    const summaryRes = await topicApi.getTopicSummary(props.topicTitle, canvasStore.currentCourse)
+
+    // 2. Get status/sm2 data
+    const statusRes = await topicApi.getTopicStatus(props.topicTitle, canvasStore.currentCourse)
+
+    topicData.value = {
+      title: props.topicTitle,
+      content: summaryRes.data || 'No summary available.',
+      status: statusRes.data,
+      materials: [] // Can be extended if API supports materials
+    }
+
     initEditor()
+  } catch (err) {
+    console.error('Failed to load topic data:', err)
+    // Fallback if API fails
+    const found = canvasStore.topics.find(t => t.title === props.topicTitle)
+    topicData.value = found || { title: props.topicTitle, content: 'Error loading content.' }
+    initEditor()
+  } finally {
+    isLoading.value = false
   }
 }
 
-watch(() => props.topicId, loadTopicData)
-watch(() => canvasStore.topics, loadTopicData, { deep: true })
+watch(() => props.topicTitle, loadTopicData)
 
 /**
  * Custom Editor.js Tool for Materials
@@ -81,7 +105,6 @@ class MaterialsTool {
     sourcesEl.classList.add('materials__sources', 'flex', 'flex-1', 'flex-col', 'gap-y-2')
 
     const renderAssets = () => {
-      // Clear but keep the add button if it exists
       const existingAssets = sourcesEl.querySelectorAll('.source-wrapper')
       existingAssets.forEach((el) => el.remove())
 
@@ -91,7 +114,6 @@ class MaterialsTool {
 
         const sourceItem = this.createAssetElement(asset, index)
 
-        // Remove button
         const removeBtn = document.createElement('div')
         removeBtn.innerHTML = '<i class="pi pi-times"></i>'
         removeBtn.classList.add(
@@ -123,7 +145,6 @@ class MaterialsTool {
       })
     }
 
-    // Add Source Button
     const addAssetBtn = document.createElement('button')
     addAssetBtn.innerText = '+ Add Source'
     addAssetBtn.classList.add(
@@ -157,7 +178,7 @@ class MaterialsTool {
 
   createAssetElement(asset, index) {
     const source = document.createElement('div')
-    source.classList.add('source', 'bg-olive-50', 'rounded-l', 'pr-4', 'pl-4', 'pt-2', 'pb-2')
+    source.classList.add('source', 'bg-olive-50', 'rounded-xl', 'pr-4', 'pl-4', 'pt-2', 'pb-2')
 
     const title = document.createElement('div')
     title.classList.add('source__title', 'text-[0.75rem]', 'outline-none', 'font-medium')
@@ -194,7 +215,6 @@ const initEditor = () => {
 
   if (!topicData.value) return
 
-  // Construct initial blocks from both content and materials
   const blocks = []
 
   if (topicData.value.content) {
@@ -225,8 +245,6 @@ const initEditor = () => {
           endpoint: '/api/chat',
           model: 'gpt-4o',
           systemPrompt: 'You are a helpful assistant.',
-
-          // Optional — use editor.save() instead of DOM scraping for context
           getContext: async () => {
             const data = await editorInstance.value.save()
             return data.blocks
@@ -261,7 +279,11 @@ onUnmounted(() => {
   <div class="topic__wrapper relative min-h-[400px]">
     <RuledBg />
 
-    <div v-if="topicData" class="topic">
+    <div v-if="isLoading" class="flex items-center justify-center h-full mt-20">
+       <i class="pi pi-spin pi-spinner text-4xl text-indigo-500"></i>
+    </div>
+
+    <div v-else-if="topicData" class="topic">
       <div class="topic__heading font-bold text-2xl mb-2">
         <h1>{{ topicData.title }}</h1>
       </div>
@@ -292,10 +314,9 @@ onUnmounted(() => {
   min-width: 1000px;
   border-radius: 12px;
   background: url('/pattern.svg');
-  min-height: 100vh;
 }
 
 .topic__heading {
-  margin-left: 6em;
+  margin-left: 7em;
 }
 </style>

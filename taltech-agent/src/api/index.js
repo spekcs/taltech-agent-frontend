@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -26,16 +26,29 @@ export const topicApi = {
 };
 
 export const quizApi = {
-  generateQuiz: (topicId, options = {}) =>
+  generateQuiz: (options = {}) =>
     api.post('/quiz/generate', {
-      topic_id: topicId,
-      type: options.type || 'test',
-      difficulty: options.difficulty || 'hard'
+      concept: options.concept, // Single topic
+      concepts: options.concepts, // Array of topics
+      course: options.course,
+      n_questions: options.n_questions || 5
     }),
-  submitAnswers: (quizId, answers) => api.post(`/quiz/${quizId}/submit`, { answers }),
-  getLatestResults: () => api.get('/quiz/results/latest'),
+  evaluate: (payload) =>
+    api.post('/quiz/evaluate', {
+      question: payload.question,
+      student_answer: payload.student_answer,
+      source_text: payload.source_text
+    }),
+  submitResult: (result) => 
+    api.post('/quiz/result', {
+      concept: result.concept,
+      course: result.course,
+      score: result.score,
+      total: result.total,
+      quality: result.quality // 0-5
+    }),
+  getNextTopic: (course) => api.get('/quiz/next', { params: { course } }),
 };
-
 export const chatApi = {
   sendMessage: (payload) => api.post('/chat', payload),
 };
