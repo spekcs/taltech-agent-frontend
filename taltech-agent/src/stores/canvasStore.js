@@ -41,14 +41,14 @@ export const useCanvasStore = defineStore('canvas', () => {
     try {
       const response = await courseApi.getCourses()
       let coursesData = Array.isArray(response.data) ? response.data : (response.data.courses || [])
-      
+
       // Enrich courses with topic counts
       const enrichedCourses = await Promise.all(coursesData.map(async (course) => {
         const courseName = typeof course === 'string' ? course : course.name;
         try {
           const topicsRes = await topicApi.getAllTopics(courseName);
           const topicCount = topicsRes.data.concepts ? topicsRes.data.concepts.length : 0;
-          
+
           if (typeof course === 'string') {
             return { name: course, topicCount };
           } else {
@@ -59,7 +59,7 @@ export const useCanvasStore = defineStore('canvas', () => {
           return typeof course === 'string' ? { name: course, topicCount: 0 } : { ...course, topicCount: 0 };
         }
       }));
-      
+
       courses.value = enrichedCourses;
     } catch (err) {
       console.error('Failed to fetch courses:', err)
