@@ -142,12 +142,10 @@ const launchQuiz = () => {
   justify-content: space-between;
   align-items: end;
   gap: 1rem;
-  padding: 1.35rem 1.5rem;
-  border-radius: 24px;
-  background:
-    radial-gradient(circle at top left, rgba(216, 133, 94, 0.18), transparent 28%),
-    linear-gradient(135deg, #fffaf2 0%, #fffcf7 55%, #f5f8ff 100%);
-  border: 1px solid #ece5d8;
+  padding: 1.25rem 1.5rem;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
 }
 
 .hero-copy {
@@ -157,9 +155,9 @@ const launchQuiz = () => {
 .topic-course {
   margin: 0 0 0.4rem;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.08em;
   font-size: 0.8rem;
-  color: #8a5a44;
+  color: #6b7280;
 }
 
 .topic-hero h1 {
@@ -171,7 +169,7 @@ const launchQuiz = () => {
 .topic-summary {
   margin: 0;
   max-width: 52ch;
-  color: #5f564b;
+  color: #6b7280;
   line-height: 1.55;
 }
 
@@ -185,12 +183,12 @@ const launchQuiz = () => {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-width: 110px;
-  min-height: 110px;
+  min-width: 100px;
+  min-height: 100px;
   padding: 0.9rem;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.88);
-  border: 1px solid #efe6d9;
+  border-radius: 8px;
+  background: #fafafa;
+  border: 1px solid #e5e7eb;
 }
 
 .hero-stat strong {
@@ -199,9 +197,9 @@ const launchQuiz = () => {
 
 .sheet-card {
   padding: 1.15rem;
-  border-radius: 22px;
-  background: #fffdf9;
-  border: 1px solid #ece5d8;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
 }
 
 .search-card {
@@ -223,16 +221,16 @@ const launchQuiz = () => {
 
 .section-note,
 .reference-meta {
-  color: #6b6860;
+  color: #6b7280;
   font-size: 0.92rem;
 }
 
 .inline-action,
 .open-link {
-  border: 1px solid #dbbca7;
-  background: #fff5eb;
-  color: #8a5a44;
-  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #111111;
+  border-radius: 8px;
   padding: 0.45rem 0.9rem;
   cursor: pointer;
   text-decoration: none;
@@ -255,9 +253,9 @@ const launchQuiz = () => {
   grid-template-columns: 52px minmax(0, 1fr);
   gap: 0.85rem;
   padding: 0.9rem;
-  border-radius: 18px;
+  border-radius: 8px;
   background: #fff;
-  border: 1px solid #f0e9dd;
+  border: 1px solid #e5e7eb;
 }
 
 .reference-rank {
@@ -265,9 +263,9 @@ const launchQuiz = () => {
   height: 52px;
   display: grid;
   place-items: center;
-  border-radius: 16px;
-  background: #fff2e4;
-  color: #8a5a44;
+  border-radius: 8px;
+  background: #f3f4f6;
+  color: #111111;
   font-weight: 800;
 }
 
@@ -285,7 +283,7 @@ const launchQuiz = () => {
 blockquote {
   margin: 0.55rem 0 0;
   padding-left: 0.9rem;
-  border-left: 3px solid #e5ccb6;
+  border-left: 2px solid #d1d5db;
   color: #302c27;
   line-height: 1.45;
 }
@@ -299,9 +297,9 @@ blockquote {
 
 .topic-empty {
   padding: 2rem;
-  border-radius: 24px;
-  background: #fffdf9;
-  border: 1px solid #ece5d8;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
 }
 
 @media (max-width: 1080px) {

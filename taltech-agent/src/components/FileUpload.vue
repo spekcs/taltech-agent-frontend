@@ -5,9 +5,11 @@ import { useCanvasStore } from '@/stores/canvasStore'
 import FileUpload from 'primevue/fileupload'
 import Card from 'primevue/card'
 import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
 
 const props = defineProps({
   courseId: { type: [String, Number], default: null },
+  courseOptions: { type: Array, default: () => [] },
 })
 
 const toast = useToast()
@@ -16,9 +18,19 @@ const canvasStore = useCanvasStore()
 const selectedFiles = ref([])
 const isUploading = ref(false)
 const uploadStatus = ref('')
+const selectedExistingCourse = ref(props.courseId ? String(props.courseId) : '')
 const manualCourse = ref('')
 
-const resolvedCourse = computed(() => String(props.courseId || manualCourse.value || '').trim())
+const selectableCourses = computed(() =>
+  props.courseOptions.map((course) => ({
+    label: course.name,
+    value: course.id,
+  })),
+)
+
+const resolvedCourse = computed(() =>
+  String(props.courseId || selectedExistingCourse.value || manualCourse.value || '').trim(),
+)
 
 const onSelect = (event) => {
   selectedFiles.value = event.files || []
@@ -54,7 +66,7 @@ const uploadSingleFile = async (file) => {
 
 const uploadFiles = async ({ files }) => {
   if (!resolvedCourse.value) {
-    onError(new Error('Lisa kõigepealt kursuse nimi.'))
+    onError(new Error('Vali olemasolev kursus või sisesta uus kursuse nimi.'))
     return
   }
 
@@ -77,6 +89,7 @@ const uploadFiles = async ({ files }) => {
     await canvasStore.loadData(true)
     selectedFiles.value = []
     uploadStatus.value = ''
+    manualCourse.value = ''
 
     toast.add({
       severity: 'success',
@@ -101,17 +114,32 @@ const uploadFiles = async ({ files }) => {
       </template>
       <template #content>
         <p class="text-gray-500 mb-4 text-sm">
-          Lae PDF-id üles ja seo need kursusega. Faili pealkiri võetakse vaikimisi failinimest.
+          Lae PDF-id üles olemasoleva kursuse alla või loo uus kursus lihtsalt uue nime sisestamisega.
         </p>
 
-        <div class="mb-4">
-          <label class="upload-label">Kursus</label>
-          <InputText
-            v-model="manualCourse"
-            :disabled="Boolean(courseId) || isUploading"
-            placeholder="Näiteks Andmestruktuurid"
-            class="w-full"
-          />
+        <div class="upload-fields">
+          <div>
+            <label class="upload-label">Olemasolev kursus</label>
+            <Select
+              v-model="selectedExistingCourse"
+              :options="selectableCourses"
+              optionLabel="label"
+              optionValue="value"
+              :disabled="Boolean(courseId) || isUploading"
+              placeholder="Vali olemasolev kursus"
+              class="w-full"
+            />
+          </div>
+
+          <div>
+            <label class="upload-label">Või uus kursuse nimi</label>
+            <InputText
+              v-model="manualCourse"
+              :disabled="Boolean(courseId) || isUploading"
+              placeholder="Näiteks Andmestruktuurid"
+              class="w-full"
+            />
+          </div>
         </div>
 
         <p v-if="isUploading || uploadStatus" class="mb-4 text-sm text-amber-700">
@@ -147,12 +175,24 @@ const uploadFiles = async ({ files }) => {
   width: 100%;
 }
 
+:deep(.p-card) {
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: none;
+}
+
+.upload-fields {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
 .upload-label {
   display: block;
   margin-bottom: 0.45rem;
   font-size: 0.8rem;
   font-weight: 700;
-  color: #6b6860;
+  color: #6b7280;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -175,6 +215,7 @@ const uploadFiles = async ({ files }) => {
 }
 
 :deep(.p-button) {
-  border-radius: 12px;
+  border-radius: 8px;
+  box-shadow: none;
 }
 </style>

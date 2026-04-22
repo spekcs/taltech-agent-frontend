@@ -161,17 +161,17 @@ watch(selectedTopicId, (newId) => {
   position: sticky;
   top: 1.5rem;
   padding: 1rem;
-  border-radius: 22px;
-  background: #fcfaf6;
-  border: 1px solid #ece5d8;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
 }
 
 .canvas-label {
   margin: 0;
   font-size: 0.78rem;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: #8a5a44;
+  letter-spacing: 0.08em;
+  color: #6b7280;
 }
 
 .sidebar-stack {
@@ -187,7 +187,7 @@ watch(selectedTopicId, (newId) => {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #8a5a44;
+  color: #6b7280;
 }
 
 .topic-list-panel {
@@ -205,15 +205,15 @@ watch(selectedTopicId, (newId) => {
   align-items: flex-start;
   gap: 0.2rem;
   padding: 0.75rem 0.85rem;
-  border: 1px solid #ece5d8;
-  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
   background: #fff;
   cursor: pointer;
 }
 
 .topic-row.active {
-  border-color: #d48b65;
-  background: #fff6ef;
+  border-color: #111111;
+  background: #f9fafb;
 }
 
 .topic-row small {

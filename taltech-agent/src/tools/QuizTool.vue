@@ -3,7 +3,9 @@ import { computed, ref, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import ProgressBar from 'primevue/progressbar'
 import Button from 'primevue/button'
+import Select from 'primevue/select'
 import SelectButton from 'primevue/selectbutton'
+import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import { quizApi } from '@/api'
 
@@ -13,12 +15,15 @@ const props = defineProps({
   readOnly: { type: Boolean, default: false },
   onSave: { type: Function, default: null },
 })
+
 const router = useRouter()
 const route = useRoute()
 
 const step = ref(props.initialData.step || 'selection')
 const difficulty = ref(props.initialData.difficulty || 'hard')
 const selectedTopicId = ref(props.initialData.selectedTopic?.id || null)
+const selectedCourseId = ref(props.initialData.selectedTopic?.courseId || null)
+const topicQuery = ref(props.initialData.topicQuery || '')
 const questions = ref(props.initialData.questions || [])
 const currentIndex = ref(props.initialData.currentIndex || 0)
 const answers = ref(props.initialData.answers || {})
@@ -33,6 +38,25 @@ const topics = computed(() => {
 })
 
 const routeTopicId = computed(() => props.config.getRouteTopicId?.() || null)
+
+const courseOptions = computed(() => {
+  const unique = [...new Set(topics.value.map((topic) => topic.courseId).filter(Boolean))]
+  return unique.map((courseId) => ({
+    label: courseId,
+    value: courseId,
+  }))
+})
+
+const filteredTopics = computed(() => {
+  const query = topicQuery.value.trim().toLowerCase()
+  return topics.value.filter((topic) => {
+    const matchesCourse = !selectedCourseId.value || topic.courseId === selectedCourseId.value
+    const matchesQuery = !query || topic.name.toLowerCase().includes(query)
+    return matchesCourse && matchesQuery
+  })
+})
+
+const quickTopicSuggestions = computed(() => filteredTopics.value.slice(0, 8))
 
 const selectedTopic = computed(() =>
   topics.value.find((topic) => String(topic.id) === String(selectedTopicId.value)) || null,
@@ -55,6 +79,7 @@ const save = () => {
     step: step.value,
     difficulty: difficulty.value,
     selectedTopic: selectedTopic.value,
+    topicQuery: topicQuery.value,
     questions: questions.value,
     currentIndex: currentIndex.value,
     answers: answers.value,
@@ -70,6 +95,8 @@ watch(
     if (!nextTopic || String(selectedTopicId.value) === String(nextTopic.id)) return
 
     selectedTopicId.value = String(nextTopic.id)
+    selectedCourseId.value = nextTopic.courseId || null
+    topicQuery.value = nextTopic.name
     step.value = 'selection'
     questions.value = []
     currentIndex.value = 0
@@ -81,21 +108,70 @@ watch(
   { immediate: true },
 )
 
+watch(selectedCourseId, (newCourseId) => {
+  if (!newCourseId) {
+    save()
+    return
+  }
+
+  if (selectedTopic.value?.courseId === newCourseId) {
+    save()
+    return
+  }
+
+  const nextTopic = filteredTopics.value[0] || null
+  selectedTopicId.value = nextTopic?.id || null
+  if (nextTopic && !topicQuery.value.trim()) {
+    topicQuery.value = nextTopic.name
+  }
+  save()
+})
+
+watch(topicQuery, () => {
+  const current = selectedTopic.value
+  if (current && filteredTopics.value.some((topic) => String(topic.id) === String(current.id))) {
+    save()
+    return
+  }
+
+  const exactMatch = filteredTopics.value.find(
+    (topic) => topic.name.toLowerCase() === topicQuery.value.trim().toLowerCase(),
+  )
+  if (exactMatch) {
+    selectedTopicId.value = exactMatch.id
+    selectedCourseId.value = exactMatch.courseId || selectedCourseId.value
+  }
+  save()
+})
+
 const selectTopic = (topic) => {
   if (!topic || selectedTopicId.value === topic.id) return
   selectedTopicId.value = topic.id
+  selectedCourseId.value = topic.courseId || null
+  topicQuery.value = topic.name
   errorMessage.value = ''
   save()
 }
 
+const resolveTopicForQuiz = () => {
+  if (selectedTopic.value) return selectedTopic.value
+  return filteredTopics.value[0] || null
+}
+
 const startQuiz = async () => {
-  if (!selectedTopic.value) return
+  const topicForQuiz = resolveTopicForQuiz()
+  if (!topicForQuiz) return
+
+  if (!selectedTopic.value || String(selectedTopic.value.id) !== String(topicForQuiz.id)) {
+    selectedTopicId.value = topicForQuiz.id
+    selectedCourseId.value = topicForQuiz.courseId || null
+  }
 
   errorMessage.value = ''
 
   try {
-    const { data } = await quizApi.generateQuiz(selectedTopic.value.name, {
-      course: selectedTopic.value.courseId || null,
+    const { data } = await quizApi.generateQuiz(topicForQuiz.name, {
+      course: topicForQuiz.courseId || null,
       nQuestions: nQuestions.value,
     })
 
@@ -229,19 +305,65 @@ const reset = () => {
 </script>
 
 <template>
-  <div class="quiz-tool rounded-3xl overflow-hidden bg-white shadow-sm my-4">
+  <div class="quiz-tool rounded-2xl overflow-hidden bg-white shadow-sm my-4">
     <div v-if="step === 'selection'" class="p-6">
       <h3 class="text-xl font-bold mb-4">Quiz Configuration</h3>
       <div class="flex flex-col gap-6">
         <p v-if="errorMessage" class="error-banner">{{ errorMessage }}</p>
-        <div>
-          <label class="block text-sm font-semibold mb-2">Topic</label>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+
+        <div class="selection-grid">
+          <section class="selection-card">
+            <label class="block text-sm font-semibold mb-2">1. Aine</label>
+            <Select
+              v-model="selectedCourseId"
+              :options="courseOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Vali aine"
+              class="w-full"
+            />
+            <p class="selection-note mt-2">
+              Piira quiz ühe kursuse materjalidele.
+            </p>
+          </section>
+
+          <section class="selection-card">
+            <label class="block text-sm font-semibold mb-2">2. Otsi terminit või teemat</label>
+            <InputText
+              v-model="topicQuery"
+              class="w-full"
+              placeholder="Näiteks: subnetting, OSPF, alamhulk"
+            />
+            <p class="selection-note mt-2">
+              Võid alustada lihtsalt märksõnast. Kui sobiv teema leidub, kasutame seda.
+            </p>
+          </section>
+        </div>
+
+        <section class="selection-card">
+          <div class="selection-head">
+            <div>
+              <label class="block text-sm font-semibold mb-2">3. Täpsem teema</label>
+              <p class="selection-note">Valikuline. Kui jätad valimata, kasutatakse esimest sobivat vastet.</p>
+            </div>
+            <span class="result-count">{{ filteredTopics.length }} teemat</span>
+          </div>
+
+          <Select
+            v-model="selectedTopicId"
+            :options="filteredTopics"
+            optionLabel="name"
+            optionValue="id"
+            placeholder="Vali konkreetne teema"
+            class="w-full"
+          />
+
+          <div v-if="quickTopicSuggestions.length" class="suggestion-grid">
             <button
-              v-for="topic in topics"
+              v-for="topic in quickTopicSuggestions"
               :key="topic.id"
               type="button"
-              class="topic-card p-3 rounded-xl cursor-pointer transition-all text-sm text-left"
+              class="topic-card p-3 rounded-lg cursor-pointer transition-all text-sm text-left"
               :class="selectedTopicId === topic.id ? 'selected' : ''"
               @pointerdown.stop
               @click.stop="selectTopic(topic)"
@@ -250,10 +372,10 @@ const reset = () => {
               <span class="topic-meta">{{ topic.courseId || 'General' }}</span>
             </button>
           </div>
-        </div>
+        </section>
 
-        <div>
-          <label class="block text-sm font-semibold mb-2">Depth</label>
+        <section class="selection-card">
+          <label class="block text-sm font-semibold mb-2">4. Depth</label>
           <SelectButton
             v-model="difficulty"
             :options="difficultyOptions"
@@ -264,11 +386,11 @@ const reset = () => {
           <p class="selection-note mt-2">
             {{ nQuestions }} avatud küsimust, vastused hinnatakse allikateksti põhjal.
           </p>
-        </div>
+        </section>
 
         <Button
           label="Start Quiz"
-          :disabled="!selectedTopicId || readOnly"
+          :disabled="(!selectedTopicId && !filteredTopics.length) || readOnly"
           @click="startQuiz"
           class="w-full"
         />
@@ -371,6 +493,44 @@ const reset = () => {
   font-size: 0.875rem;
 }
 
+.selection-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.selection-card {
+  padding: 1rem;
+  border-radius: 1rem;
+  border: 1px solid #e5e7eb;
+  background: #fffdf9;
+}
+
+.selection-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: start;
+  margin-bottom: 0.75rem;
+}
+
+.result-count {
+  color: #8a5a44;
+  background: #fff2e4;
+  border: 1px solid #ecd9c7;
+  border-radius: 8px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.suggestion-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-top: 0.85rem;
+}
+
 .topic-card {
   border: 1px solid #e5e7eb;
   background: #fff;
@@ -391,14 +551,14 @@ const reset = () => {
 .question-card,
 .evaluation-card {
   padding: 1rem;
-  border-radius: 1rem;
+  border-radius: 16px;
   border: 1px solid #e5e7eb;
   background: #fffdf9;
 }
 
 .error-banner {
   padding: 0.85rem 1rem;
-  border-radius: 0.9rem;
+  border-radius: 8px;
   background: #fff1f2;
   border: 1px solid #fecdd3;
   color: #be123c;
@@ -435,5 +595,12 @@ const reset = () => {
 
 .warn {
   color: #b45309;
+}
+
+@media (max-width: 900px) {
+  .selection-grid,
+  .suggestion-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

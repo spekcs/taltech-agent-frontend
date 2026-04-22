@@ -4,7 +4,6 @@ import { useRoute } from 'vue-router'
 import { useCanvasStore } from '@/stores/canvasStore'
 import EditorJS from '@editorjs/editorjs'
 import { QuizTool, ChatTool } from '@/tools'
-import RuledBg from '@/components/canvas/RuledBg.vue'
 
 const route = useRoute()
 const canvasStore = useCanvasStore()
@@ -67,31 +66,38 @@ onUnmounted(() => {
 
 <template>
   <div class="quiz-view-wrapper min-h-screen p-6">
-    <div class="quiz-content relative mx-auto max-w-[1000px] p-12 rounded-xl bg-white overflow-hidden">
-      <RuledBg />
-
-      <div class="relative z-10">
-        <div class="mb-8 ml-6">
-          <h1 class="text-2xl font-black text-gray-900 flex items-center gap-3">
-            <i class="pi pi-bolt" style="font-size: 2rem"></i>
-            Interactive Quiz
-          </h1>
-        </div>
-
-        <div ref="editorRef" class="quiz-editor"></div>
+    <div class="quiz-content mx-auto max-w-[1000px]">
+      <div class="quiz-header">
+        <h1>Quiz</h1>
+        <p>Choose a course, narrow to a topic if you want, and start.</p>
       </div>
+
+      <div ref="editorRef" class="quiz-editor"></div>
     </div>
   </div>
 </template>
 
 <style scoped>
 .quiz-content {
-  background: url('/pattern.svg');
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.04),
-    0 4px 8px rgba(0, 0, 0, 0.06),
-    0 12px 24px rgba(0, 0, 0, 0.06),
-    0 32px 48px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background: #ffffff;
+  padding: 32px;
+}
+
+.quiz-header {
+  margin-bottom: 24px;
+}
+
+.quiz-header h1 {
+  margin: 0 0 8px;
+  font-size: 1.875rem;
+  line-height: 1.1;
+}
+
+.quiz-header p {
+  margin: 0;
+  color: #6b7280;
 }
 
 :deep(.ce-block__content) {
